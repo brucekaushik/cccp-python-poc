@@ -2,11 +2,11 @@ import base64
 
 class Representation:
 
-    def validate_binstr(self, binstr):
+    def is_valid_binstr(self, binstr):
         return set(binstr) <= {'0', '1'}
 
     def binstr_to_b64(self, binstr: str, validate: bool = True) -> tuple[str, int]:
-        if validate and not self.validate_binstr(binstr):
+        if validate and not self.is_valid_binstr(binstr):
             raise ValueError("payload contains characters other than '0' or '1'")
 
         padded_len = (8 - len(binstr) % 8) % 8 # pad to full bytes
@@ -22,7 +22,7 @@ class Representation:
         return binstr[-bit_length:] # trim back to original bit length
 
     def binstr_to_hex(self, binstr: str, validate: bool = True) -> tuple[str, int]:
-        if validate and not self.validate_binstr(binstr):
+        if validate and not self.is_valid_binstr(binstr):
             raise ValueError("Input contains characters other than '0' or '1'")
 
         padded_len = (4 - len(binstr) % 4) % 4 # pad to full nibbles
