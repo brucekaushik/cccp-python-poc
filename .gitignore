@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+trials/
+tests/
+input_output/*.json
+input_output/*.bin
