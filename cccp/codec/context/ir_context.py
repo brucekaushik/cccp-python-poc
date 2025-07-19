@@ -1,17 +1,20 @@
 import json
-from typing import List, Dict, TypedDict
+from pathlib import Path
+from typing import List, Dict, Union, TypedDict, Optional
+from cccp.codec.types import JsonIr, VendorLutMetaDict
+from cccp.codec import vendor
 
-class JsonIR(TypedDict):
-    version: str
-    headers: List[List[str]]
-    segments: List
 
 class IrContext():
 
     def __init__(self) -> None:
-        self.ir: JsonIR = self.init_ir()
+        self.ir: JsonIr = self.init_ir()
+        self.last_header_num: int = 0b00000011
+        self.lut_meta: Dict[str, VendorLutMetaDict] = {}
+        self.lut: Dict[str, str] = {}
+        self.default_header_count:int = 3
 
-    def init_ir(self) -> JsonIR:
+    def init_ir(self) -> JsonIr:
         ir = {
             "version": "0.0.1",
             "headers": [
@@ -23,7 +26,7 @@ class IrContext():
         }
         return ir
 
-    def get_ir(self) -> JsonIR:
+    def get_ir(self) -> JsonIr:
         return self.ir
 
     # TODO: this is not applicable when unpacking, maybe move this elsewhere
@@ -38,3 +41,55 @@ class IrContext():
     def write_ir_to_file(self, output_filepath: str) -> None:
         with open(output_filepath, 'w') as fp:
             json.dump(self.ir, fp, indent=4)
+
+    def set_lut_meta_for_default_headers(self) -> None:
+        self.lut_meta["H1"] = {
+            "byte": 0b00000001,
+            "name": "Exclude",
+            "symbol_width": 0,
+            "scheme": None,
+            "sign": "Exclude",
+        }
+        self.lut_meta["H2"] = {
+            "byte": 0b00000010,
+            "name": "NewLine",
+            "symbol_width": 0,
+            "scheme": None,
+            "sign": "NewLine",
+        }
+        self.lut_meta["H3"] = {
+            "byte": 0b00000011,
+            "name": "ContinueousSpaces",
+            "symbol_width": 0,
+            "scheme": None,
+            "sign": "ContinueousSpaces",
+        }
+
+    # TODO: this is not applicable when unpacking, maybe move this elsewhere
+    def add_header(self, header_name: str) -> None:
+        self.last_header_num += 0b1
+        header_code = f"H{self.last_header_num}"
+        vendor.validate_sign(header_name)
+        self.ir["headers"].append([header_code, header_name])
+
+    def load_lut_meta(self) -> None:
+        for segment_header in self.ir['headers']:
+            if segment_header[0] in ["H1", "H2", "H3"]:
+                continue
+
+            header_code = segment_header[0]
+            header_name = segment_header[1]
+            self.load_header_lut_meta(header_name, header_code)
+
+    def load_header_lut_meta(self, header_name, header_code):
+        vendor_package_path = vendor.get_vendor_package_path(header_name)
+        lut_meta_path = vendor_package_path / "lut_meta.json"
+
+        with open(lut_meta_path, 'r') as f:
+            data = json.load(f)
+            self.lut_meta[header_code] = data
+            self.lut_meta[header_code]["byte"] = int(header_code.strip('H'))
+
+        lut_path = vendor_package_path / "lut_map.json"
+        with open(lut_path, 'r') as f:
+            self.lut = json.load(f)
