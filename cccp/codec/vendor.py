@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 import importlib
 import inspect
-from cccp.codec.contracts import BaseAsciiToJsonIr
+from cccp.codec.contracts import BaseAsciiToJsonIr, BaseJsonIrToBin
 
 
 def validate_sign(sign: str) -> None:
@@ -36,3 +36,20 @@ def get_AsciiToJsonIr_obj(sign:str) -> BaseAsciiToJsonIr:
         raise TypeError(f"The attribute 'AsciiToJsonIr' in module {module_path} is not a class.")
 
     return module.AsciiToJsonIr()
+
+def get_JsonIrToBin_obj(sign: str) -> BaseJsonIrToBin:
+    module_path = get_vendor_module_path(sign) + '.packers'
+    module = None
+
+    try:
+        module = importlib.import_module(module_path)
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(f"The module at {module_path} does not exist or is not accessible.")
+
+    if not hasattr(module, 'JsonIrToBin'):
+        raise AttributeError(f"The module {module_path} does not have a class named 'JsonIrToBin'.")
+
+    if not inspect.isclass(module.JsonIrToBin):
+        raise TypeError(f"The attribute 'JsonIrToBin' in module {module_path} is not a class.")
+
+    return module.JsonIrToBin()

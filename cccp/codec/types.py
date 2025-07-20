@@ -28,3 +28,7 @@ class PartiallyProcessedPayloadTuple(NamedTuple):
 class PayloadBitlenAndPayload(NamedTuple):
     payload_bitlen: int
     payload: str
+
+class PayloadBytesAndSymbolCount(NamedTuple):
+    payload_bytes: bytes
+    symbol_count: int

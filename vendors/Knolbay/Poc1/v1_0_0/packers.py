@@ -76,3 +76,20 @@ class AsciiToJsonIr():
         if scheme == "lzb64":
             payload, l = transformers.bitstr_to_lzb64str(payload)
         return payload_bitlen, payload
+
+class JsonIrToBin():
+
+    def get_bytes_of_segment(self, segment: JsonIrSegment, scheme: Optional[str], symbol_width: int) -> List[bytes]:
+        header_code = segment[0]
+        payload_bitlen = segment[1]
+        payload = segment[2]
+
+        if scheme != 'lzb64':
+            raise ValueError(f"Unknown encoding format: {scheme}")
+
+        payload_binstr = transformers.lzb64str_to_bitstr(payload, payload_bitlen)
+        payload_bytes, symbol_count = transformers.binstr_to_bytes_and_symbol_count(payload_binstr, payload_bitlen, symbol_width)
+        symbol_count_bytes = f"{symbol_count}".encode('ascii') # use hex later
+        comma_byte = ','.encode('ascii')
+
+        return [symbol_count_bytes, comma_byte, payload_bytes] # maybe enforce this at runtime?
