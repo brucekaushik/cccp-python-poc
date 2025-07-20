@@ -35,7 +35,7 @@ class IrContext():
             self.ir = json.load(fp)
 
     # TODO: this is not applicable when unpacking, maybe move this elsewhere
-    def set_ir(self, ir: Dict) -> None:
+    def set_ir(self, ir: JsonIr) -> None:
         self.ir = ir
 
     def write_ir_to_file(self, output_filepath: str) -> None:
@@ -43,6 +43,9 @@ class IrContext():
             json.dump(self.ir, fp, indent=4)
 
     def set_lut_meta_for_default_headers(self) -> None:
+        if not self.lut_meta:
+            return
+
         self.lut_meta["H1"] = {
             "byte": 0b00000001,
             "name": "Exclude",
@@ -79,6 +82,10 @@ class IrContext():
 
             header_code = segment_header[0]
             header_name = segment_header[1]
+
+            if self.lut_meta.get(header_code):
+                continue
+
             self.load_header_lut_meta(header_name, header_code)
 
     def load_header_lut_meta(self, header_name, header_code):
