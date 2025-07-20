@@ -4,3 +4,4 @@ trials/
 tests/
 input_output/*.json
 input_output/*.bin
+input_output/*.cccp
