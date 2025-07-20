@@ -43,7 +43,7 @@ class IrContext():
             json.dump(self.ir, fp, indent=4)
 
     def set_lut_meta_for_default_headers(self) -> None:
-        if not self.lut_meta:
+        if self.lut_meta:
             return
 
         self.lut_meta["H1"] = {
