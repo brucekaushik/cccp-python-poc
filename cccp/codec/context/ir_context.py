@@ -9,10 +9,11 @@ class IrContext():
 
     def __init__(self) -> None:
         self.ir: JsonIr = self.init_ir()
-        self.last_header_num: int = 0b00000011
+        self.luts: Dict[str, Dict[str, str]] = {}
         self.lut_meta: Dict[str, VendorLutMetaDict] = {}
-        self.lut: Dict[str, str] = {}
-        self.default_header_count:int = 3
+        self.default_header_count: int = 3
+        self.last_header_num: int = 3
+        self.last_header_code: str = "H3"
 
     def init_ir(self) -> JsonIr:
         ir = {
@@ -69,11 +70,11 @@ class IrContext():
         }
 
     # TODO: this is not applicable when unpacking, maybe move this elsewhere
-    def add_header(self, header_name: str) -> None:
-        self.last_header_num += 0b1
-        header_code = f"H{self.last_header_num}"
+    def add_header(self, header_name: str) -> str:
+        self.last_header_num += 1
+        self.last_header_code = f"H{self.last_header_num}"
         vendor.validate_sign(header_name)
-        self.ir["headers"].append([header_code, header_name])
+        self.ir["headers"].append([self.last_header_code, header_name])
 
     def load_lut_meta(self) -> None:
         for segment_header in self.ir['headers']:
@@ -83,12 +84,12 @@ class IrContext():
             header_code = segment_header[0]
             header_name = segment_header[1]
 
-            if self.lut_meta.get(header_code):
+            if header_code in self.lut_meta:
                 continue
 
             self.load_header_lut_meta(header_name, header_code)
 
-    def load_header_lut_meta(self, header_name, header_code):
+    def load_header_lut_meta(self, header_name: str, header_code: str):
         vendor_package_path = vendor.get_vendor_package_path(header_name)
         lut_meta_path = vendor_package_path / "lut_meta.json"
 
@@ -97,6 +98,22 @@ class IrContext():
             self.lut_meta[header_code] = data
             self.lut_meta[header_code]["byte"] = int(header_code.strip('H'))
 
+    def load_luts(self) -> None:
+        for segment_header in self.ir['headers']:
+            if segment_header[0] in ["H1", "H2", "H3"]:
+                continue
+
+            header_code = segment_header[0]
+            header_name = segment_header[1]
+
+            if header_code in self.luts:
+                continue
+
+            self.load_header_lut(header_name, header_code)
+
+    def load_header_lut(self, header_name: str, header_code: str):
+        vendor_package_path = vendor.get_vendor_package_path(header_name)
         lut_path = vendor_package_path / "lut_map.json"
+
         with open(lut_path, 'r') as f:
-            self.lut = json.load(f)
+            self.luts[header_code] = json.load(f)

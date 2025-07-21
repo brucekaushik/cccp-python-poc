@@ -1,5 +1,5 @@
 from io import StringIO
-from typing import List, Optional, Union, TextIO
+from typing import Dict, List, Optional, Union, TextIO
 from cccp.codec.context import IrContext
 from cccp.codec.contracts import BaseAsciiToJsonIr
 from cccp.codec import vendor
@@ -21,15 +21,19 @@ class AsciiToJsonIr(IrContext):
         self.vendor_header_code: Optional[str] = None
         self.vendor_sign: Optional[str] = None
         self.vendor_packer: Optional[BaseAsciiToJsonIr] = None
+        self.vendor_lut: Optional[Dict[str, str]]
 
     def load_vendor_data(self) -> None:
         self.vendor_header_code = f"H{self.last_header_num}"
+        self.vendor_lut = self.luts[self.vendor_header_code]
         self.vendor_sign = self.lut_meta[self.vendor_header_code]["sign"]
         self.vendor_packer = vendor.get_AsciiToJsonIr_obj(self.vendor_sign)
+
 
     def encode(self) -> None:
         self.set_lut_meta_for_default_headers()
         self.load_lut_meta()
+        self.load_luts()
         self.load_vendor_data()
 
         if not self.ir["segments"]:
@@ -76,7 +80,7 @@ class AsciiToJsonIr(IrContext):
                 self.conclude_newline_segment()
                 continue
 
-            partially_procesed_payload = self.vendor_packer.process_char(char, self.lut)
+            partially_procesed_payload = self.vendor_packer.process_char(char, self.vendor_lut)
             if not partially_procesed_payload:
                 continue
 
