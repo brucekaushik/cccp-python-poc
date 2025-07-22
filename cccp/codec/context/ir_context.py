@@ -98,7 +98,7 @@ class IrContext():
             self.lut_meta[header_code] = data
             self.lut_meta[header_code]["byte"] = int(header_code.strip('H'))
 
-    def load_luts(self) -> None:
+    def load_luts(self, reversed: bool = False) -> None:
         for segment_header in self.ir['headers']:
             if segment_header[0] in ["H1", "H2", "H3"]:
                 continue
@@ -109,11 +109,14 @@ class IrContext():
             if header_code in self.luts:
                 continue
 
-            self.load_header_lut(header_name, header_code)
+            self.load_header_lut(header_name, header_code, reversed)
 
-    def load_header_lut(self, header_name: str, header_code: str):
+    def load_header_lut(self, header_name: str, header_code: str, reversed: bool = False):
         vendor_package_path = vendor.get_vendor_package_path(header_name)
         lut_path = vendor_package_path / "lut_map.json"
 
         with open(lut_path, 'r') as f:
-            self.luts[header_code] = json.load(f)
+            data = json.load(f)
+            if reversed:
+                data = {v: k for k, v in data.items()}
+            self.luts[header_code] = data

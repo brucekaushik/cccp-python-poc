@@ -24,3 +24,9 @@ class BaseBinToJsonIr(ABC):
     @abstractmethod
     def decode_segment(self, fp: BufferedReader, symbol_width: int, scheme: str) -> Tuple[str, int]:
         pass
+
+class BaseJsonIrToAscii(ABC):
+
+    @abstractmethod
+    def decode_segment(self, payload_bitlen: int, payload: str, lut_meta: Dict, lut: Dict):
+        pass

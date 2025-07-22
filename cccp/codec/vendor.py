@@ -7,6 +7,7 @@ from cccp.codec.contracts import (
     BaseAsciiToJsonIr,
     BaseJsonIrToBin,
     BaseBinToJsonIr,
+    BaseJsonIrToAscii,
 )
 
 
@@ -74,3 +75,20 @@ def get_BinToJsonIr_obj(sign: str) -> BaseBinToJsonIr:
         raise TypeError(f"The attribute 'JsonIrToBin' in module {module_path} is not a class.")
 
     return module.BinToJsonIr()
+
+def get_JsonIrToAscii_obj(sign: str) -> BaseJsonIrToAscii:
+    module_path = get_vendor_module_path(sign) + '.unpackers'
+    module = None
+
+    try:
+        module = importlib.import_module(module_path)
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(f"The module at {module_path} does not exist or is not accessible.")
+
+    if not hasattr(module, 'JsonIrToAscii'):
+        raise AttributeError(f"The module {module_path} does not have a class named 'JsonIrToAscii'.")
+
+    if not inspect.isclass(module.JsonIrToAscii):
+        raise TypeError(f"The attribute 'JsonIrToAscii' in module {module_path} is not a class.")
+
+    return module.JsonIrToAscii()

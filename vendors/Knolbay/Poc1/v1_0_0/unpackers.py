@@ -6,10 +6,12 @@ from io import BufferedReader
 # or maybe even a just a cccp-utils package
 sys.path.append('../../../..')
 
-from typing import Tuple
+from typing import Tuple, Dict
 from cccp.codec import transformers as rep
 from cccp.codec import bitmath
-from cccp.codec.contracts import BaseBinToJsonIr
+from cccp.codec.contracts import BaseBinToJsonIr, BaseJsonIrToAscii
+from cccp.codec.types import VendorLutDict, VendorLutMetaDict
+
 
 class BinToJsonIr(BaseBinToJsonIr):
 
@@ -37,3 +39,19 @@ class BinToJsonIr(BaseBinToJsonIr):
             payload_str, pbl = rep.bitstr_to_lzb64str(payload_str)
 
         return [payload_bitlen, payload_str]
+
+class JsonIrToAscii(BaseJsonIrToAscii):
+
+    def decode_segment(self, payload_bitlen: str, payload: str, lut_meta: VendorLutMetaDict, lut: VendorLutDict):
+        symbol_width = lut_meta["symbol_width"]
+
+        if lut_meta["scheme"] == 'lzb64':
+            payload = rep.lzb64str_to_bitstr(payload, payload_bitlen)
+
+        symbols = []
+        for i in range(0, len(payload), symbol_width):
+            symbol_bitstr = payload[i:i+symbol_width]
+            symbol = lut[symbol_bitstr] + ' '
+            symbols.append(symbol)
+
+        return ''.join(symbols)
