@@ -1,6 +1,6 @@
 # Proof-of-Concept: Context-Aware Composable Compression Protocol (CCCP)
 
-This Proof-of-Concept (POC) demonstrates how the CCCP framework enables interaction between the SDK and vendor-specific encoders/decoders.
+This Proof-of-Concept (POC) demonstrates how the [CCCP](https://github.com/brucekaushik/cccp) enables interaction between the SDK and vendor-specific encoders/decoders.
 
 It showcases a staged vendor-based compression approach via a base SDK and vendor-specific encoders/decoders, where the second stage slightly inflates the output compared to the first intentionally. The **Vendors Package** represents the vendor-specific SDK implementation. In a full implementation, this would ideally be global (one per device) and installable via:
 
@@ -24,7 +24,7 @@ A future enhancement could include a flag to retrieve encoders/decoders in a spe
 ## Programming Language & Terminology used in the POC
 
 - Python 3.8 and above is required for running the POC.
-- For terminology please refer to the main CCCP spec.
+- For terminology please refer to the main [CCCP spec](https://github.com/brucekaushik/cccp).
 
 ## Quick Start
 
@@ -59,7 +59,7 @@ input_output/input2_rec2.txt       # stage 2: reconstructed text from IR
 This POC **does not** focus on:
 
 - Encoding/decoding performance (RAM & CPU usage) or throughput (Mbps)
-- Complete streamability (planned via **SFOR** in the future)
+- Complete streamability (planned via [SFOR](https://github.com/brucekaushik/sfor) in the future)
 - Production-level code quality (e.g., error handling)
 
 ## Demonstrated Features
