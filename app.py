@@ -11,7 +11,7 @@ def md5(fname):
 
 if __name__ == "__main__":
 
-    # STAGE1: text -> IR -> full binary -> IR
+    # STAGE1: text -> IR -> full binary -> IR -> text
 
     input_filepath = 'input_output/input2.txt'
     ir_packer = AsciiToJsonIr(input_filepath)
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     assert md5(ir_output_filepath) == md5(ir_rec_output_filepath)
     assert md5(input_filepath) == md5(output_filepath)
 
-    # STAGE2: IR -> full binary -> IR
+    # STAGE2: IR -> full binary -> IR -> text
     # using the same ir_packer object and therefore the same ir object from stage1 to further encode
     # but please note that we could use a different ir_packer object and load the ir json from file
 
