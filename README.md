@@ -196,3 +196,13 @@ cccp.codec.Knolbay.Poc2.v1_0_0.unpackers.JsonIrToAscii
 ```
 
 > For such simple transformations, the SDK alone would usually be sufficient, without requiring vendor-specific encoders/decoders. However, in this POC, vendorization is demonstrated explicitly — so the LUT logic is shown in separate vendor classes. In a real-world implementation, this could be replaced with a simple SDK-only flow, optionally keeping a vendor “hook” for extension.
+
+## 📜 License
+
+This POC is under active development. Licensed under [MIT](LICENSE).
+
+## ✍️ Author
+
+Made by [Nanduri Srinivas Koushik](https://www.linkedin.com/in/brucekaushik/).
+
+Ideas, suggestions, constructive criticism, and contributions are always welcome. Whether it’s proposing improvements, pointing out flaws, or sharing new use cases — your input helps make SFOR better.
