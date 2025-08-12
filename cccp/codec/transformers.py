@@ -1,11 +1,12 @@
 import base64
+from typing import Tuple
 from cccp.codec import bitmath
 from cccp.codec.types import PayloadBytesAndSymbolCount
 
 def is_valid_bitstr(bitstr):
     return set(bitstr) <= {'0', '1'}
 
-def bitstr_to_lzb64str(bitstr: str, validate: bool = True) -> tuple[str, int]:
+def bitstr_to_lzb64str(bitstr: str, validate: bool = True) -> Tuple[str, int]:
     if validate and not is_valid_bitstr(bitstr):
         raise ValueError("payload contains characters other than '0' or '1'")
 
@@ -21,7 +22,7 @@ def lzb64str_to_bitstr(b64str: str, bitlen: int) -> str:
     bitstr = ''.join(f'{byte:08b}' for byte in byte_data) # convert to bitstr
     return bitstr[-bitlen:] # trim back to original bit length
 
-def bitstr_to_lzhexstr(bitstr: str, validate: bool = True) -> tuple[str, int]:
+def bitstr_to_lzhexstr(bitstr: str, validate: bool = True) -> Tuple[str, int]:
     if validate and not is_valid_bitstr(bitstr):
         raise ValueError("Input contains characters other than '0' or '1'")
 
