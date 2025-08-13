@@ -92,25 +92,25 @@ This script demonstrates the complete CCCP encoding–decoding pipeline in two s
   - Shows that IR can be updated and re-encoded without re-parsing the original text.
   - Ensures that both the intermediate IR and final text are bit-for-bit identical to their sources after each round trip. *(In this POC, stage 2 output is slightly larger due to different headers and compression context.)*
 
-The SDK's packer/unpacker classes (`AsciiToJsonIr`, `JsonIrToBin`, `BinToJsonIr`, `JsonIrToAscii`) call predefined methods, thereby enforcing the expected behavior of vendor-specific implementations via duck typing at runtime. While formal base contracts for these methods are defined in cccp.codec.contracts (and can be implemented by vendors), the SDK does not require inheritance — the object type is treated as an interface rather than a strict base class.
+The SDK's encoder/decoder classes (`AsciiToJsonIr`, `JsonIrToBin`, `BinToJsonIr`, `JsonIrToAscii`) call predefined methods, thereby enforcing the expected behavior of vendor-specific implementations via duck typing at runtime. While formal base contracts for these methods are defined in cccp.codec.contracts (and can be implemented by vendors), the SDK does not require inheritance — the object type is treated as an interface rather than a strict base class.
 
 ### Encoders (SDK Layer)
 
 ```
-cccp.codec.packers.AsciiToJsonIr
-cccp.codec.packers.JsonIrToBin
+cccp.codec.encoders.AsciiToJsonIr
+cccp.codec.encoders.JsonIrToBin
 ```
 
-SDK's packer classes mentioned above.
+SDK's encoder classes mentioned above.
 
 ### Decoders (SDK Layer)
 
 ```
-cccp.codec.unpackers.BinToJsonIr
-cccp.codec.unpackers.JsonIrToAscii
+cccp.codec.decoders.BinToJsonIr
+cccp.codec.decoders.JsonIrToAscii
 ```
 
-SDK's unpacker classes mentioned above.
+SDK's decoder classes mentioned above.
 
 ### Interfaces
 
@@ -118,9 +118,9 @@ SDK's unpacker classes mentioned above.
 cccp.codec.context.IrContext
 ```
 
-Current interface used by the SDK's packer and unpacker classes (`AsciiToJsonIr`, `JsonIrToBin`, `BinToJsonIr`, `JsonIrToAscii`). It defines a common contract for working with **Intermediate Representation (IR)** objects within the SDK layer.
+Current interface used by the SDK's encoder and decoder classes (`AsciiToJsonIr`, `JsonIrToBin`, `BinToJsonIr`, `JsonIrToAscii`). It defines a common contract for working with **Intermediate Representation (IR)** objects within the SDK layer.
 
-Vendor-specific implementations do **not** use this interface — they follow a separate, duck-typed runtime contract (see *Contracts* below). In future, `IrContext` may be split into dedicated packer and unpacker interfaces; its current form is intentionally minimal and provisional.
+Vendor-specific implementations do **not** use this interface — they follow a separate, duck-typed runtime contract (see *Contracts* below). In future, `IrContext` may be split into dedicated encoder and decoder interfaces; its current form is intentionally minimal and provisional.
 
 ### Contracts
 
@@ -131,7 +131,7 @@ cccp.codec.contracts.BaseBinToJsonIr
 cccp.codec.contracts.BaseJsonIrToAscii
 ```
 
-Base contracts implemented by vendor-specific packers and unpackers.
+Base contracts implemented by vendor-specific encoders and decoders.
 
 Unlike `IrContext`, these are **not statically type-checked** — the SDK validates them at runtime using duck typing.
 
@@ -172,10 +172,10 @@ Let’s assume Vendor1 is represented uniquely by the sign `Knolbay:Poc1@1.0.0`
 ```
 cccp.codec.Knolbay.Poc1.v1_0_0/lut_map.json
 cccp.codec.Knolbay.Poc1.v1_0_0/lut_meta.json
-cccp.codec.Knolbay.Poc1.v1_0_0.packers.AsciiToJsonIr
-cccp.codec.Knolbay.Poc1.v1_0_0.packers.JsonIrToBin
-cccp.codec.Knolbay.Poc1.v1_0_0.unpackers.BinToJsonIr
-cccp.codec.Knolbay.Poc1.v1_0_0.unpackers.JsonIrToAscii
+cccp.codec.Knolbay.Poc1.v1_0_0.encoders.AsciiToJsonIr
+cccp.codec.Knolbay.Poc1.v1_0_0.encoders.JsonIrToBin
+cccp.codec.Knolbay.Poc1.v1_0_0.decoders.BinToJsonIr
+cccp.codec.Knolbay.Poc1.v1_0_0.decoders.JsonIrToAscii
 ```
 
 > For such simple transformations, the SDK alone would usually be sufficient, without requiring vendor-specific encoders/decoders. However, in this POC, vendorization is demonstrated explicitly — so the LUT logic is shown in separate vendor classes. In a real-world implementation, this could be replaced with a simple SDK-only flow, optionally keeping a vendor “hook” for extension.
@@ -189,10 +189,10 @@ Let’s assume Vendor2 is represented uniquely by the sign `Knolbay:Poc2@1.0.0`
 ```
 cccp.codec.Knolbay.Poc2.v1_0_0/lut_map.json
 cccp.codec.Knolbay.Poc2.v1_0_0/lut_meta.json
-cccp.codec.Knolbay.Poc2.v1_0_0.packers.AsciiToJsonIr
-cccp.codec.Knolbay.Poc2.v1_0_0.packers.JsonIrToBin
-cccp.codec.Knolbay.Poc2.v1_0_0.unpackers.BinToJsonIr
-cccp.codec.Knolbay.Poc2.v1_0_0.unpackers.JsonIrToAscii
+cccp.codec.Knolbay.Poc2.v1_0_0.encoders.AsciiToJsonIr
+cccp.codec.Knolbay.Poc2.v1_0_0.encoders.JsonIrToBin
+cccp.codec.Knolbay.Poc2.v1_0_0.decoders.BinToJsonIr
+cccp.codec.Knolbay.Poc2.v1_0_0.decoders.JsonIrToAscii
 ```
 
 > For such simple transformations, the SDK alone would usually be sufficient, without requiring vendor-specific encoders/decoders. However, in this POC, vendorization is demonstrated explicitly — so the LUT logic is shown in separate vendor classes. In a real-world implementation, this could be replaced with a simple SDK-only flow, optionally keeping a vendor “hook” for extension.
