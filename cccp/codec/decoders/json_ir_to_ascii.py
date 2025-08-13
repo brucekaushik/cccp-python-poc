@@ -13,22 +13,22 @@ class JsonIrToAscii(IrContext):
 
     def __init__(self) -> None:
         super().__init__()
-        self.unpackers: Dict[str, Optional[BaseJsonIrToAscii]] = {}
+        self.decoders: Dict[str, Optional[BaseJsonIrToAscii]] = {}
 
-    def load_unpackers(self) -> None:
+    def load_decoders(self) -> None:
         if not self.lut_meta:
             raise ValueError("Please load the lut_meta for all the headers")
 
-        self.unpackers["H1"] = None
-        self.unpackers["H2"] = None
-        self.unpackers["H3"] = None
+        self.decoders["H1"] = None
+        self.decoders["H2"] = None
+        self.decoders["H3"] = None
 
         for header_code, header_data in self.lut_meta.items():
             if header_code in ["H1", "H2", "H3"]:
                 continue
             vendor_sign = header_data["sign"]
-            unpacker = vendor.get_JsonIrToAscii_obj(vendor_sign)
-            self.unpackers[header_code] = unpacker
+            decoder = vendor.get_JsonIrToAscii_obj(vendor_sign)
+            self.decoders[header_code] = decoder
 
     def write_segments(self, fp: TextIO):
         for segment in self.ir["segments"]:
@@ -62,11 +62,11 @@ class JsonIrToAscii(IrContext):
         payload_bitlen = cast(int, segment[1])
         payload = cast(str, segment[2])
 
-        vendor_unpacker = cast(BaseJsonIrToAscii, self.unpackers[header_code])
+        vendor_decoder = cast(BaseJsonIrToAscii, self.decoders[header_code])
         vendor_lut_meta = self.lut_meta[header_code]
         vendor_lut = self.luts[header_code]
 
-        payload = vendor_unpacker.decode_segment(payload_bitlen, payload, vendor_lut_meta, vendor_lut)
+        payload = vendor_decoder.decode_segment(payload_bitlen, payload, vendor_lut_meta, vendor_lut)
 
         return payload
 
@@ -74,7 +74,7 @@ class JsonIrToAscii(IrContext):
         self.set_lut_meta_for_default_headers()
         self.load_lut_meta()
         self.load_luts(reversed=True)
-        self.load_unpackers()
+        self.load_decoders()
 
         with open(ascii_filepath, 'a') as fp:
             fp.truncate(0)

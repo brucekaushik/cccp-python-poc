@@ -21,14 +21,14 @@ class AsciiToJsonIr(IrContext):
 
         self.vendor_header_code: Optional[str] = None
         self.vendor_sign: Optional[str] = None
-        self.vendor_packer: Optional[BaseAsciiToJsonIr] = None
+        self.vendor_encoder: Optional[BaseAsciiToJsonIr] = None
         self.vendor_lut: Optional[VendorLutDict]
 
     def load_vendor_data(self) -> None:
         self.vendor_header_code = f"H{self.last_header_num}"
         self.vendor_lut = self.luts[self.vendor_header_code]
         self.vendor_sign = self.lut_meta[self.vendor_header_code]["sign"]
-        self.vendor_packer = vendor.get_AsciiToJsonIr_obj(self.vendor_sign)
+        self.vendor_encoder = vendor.get_AsciiToJsonIr_obj(self.vendor_sign)
 
     def encode(self) -> None:
         self.set_lut_meta_for_default_headers()
@@ -74,7 +74,7 @@ class AsciiToJsonIr(IrContext):
         self.ir["segments"] = segments
 
     def encode_stream(self, stream: TextIO) -> None:
-        assert self.vendor_packer is not None
+        assert self.vendor_encoder is not None
         assert self.vendor_lut is not None
 
         while True:
@@ -84,7 +84,7 @@ class AsciiToJsonIr(IrContext):
                 self.conclude_newline_segment()
                 continue
 
-            partially_procesed_payload = self.vendor_packer.process_char(char, self.vendor_lut)
+            partially_procesed_payload = self.vendor_encoder.process_char(char, self.vendor_lut)
             if not partially_procesed_payload:
                 continue
 
@@ -167,12 +167,12 @@ class AsciiToJsonIr(IrContext):
 
     def conclude_vendor_segment(self) -> None:
         assert self.vendor_header_code is not None
-        assert self.vendor_packer is not None
+        assert self.vendor_encoder is not None
 
         lut_meta =  self.lut_meta[self.vendor_header_code]
         payload = ''.join(self.processed_payloads)
         payload_bitlen = sum(self.processed_payload_bitlens)
 
-        payload_bitlen, payload = self.vendor_packer.conclude_segment(payload_bitlen, payload, lut_meta)
+        payload_bitlen, payload = self.vendor_encoder.conclude_segment(payload_bitlen, payload, lut_meta)
         segment: JsonIrSegment = [self.vendor_header_code, payload_bitlen, payload]
         self.processed_segments.append(segment)

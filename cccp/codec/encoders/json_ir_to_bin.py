@@ -12,22 +12,22 @@ class JsonIrToBin(IrContext):
 
     def __init__(self) -> None:
         super().__init__()
-        self.packers: Dict[str, BaseJsonIrToBin] = {}
+        self.encoders: Dict[str, BaseJsonIrToBin] = {}
 
-    def load_packers(self):
+    def load_encoders(self):
         if not self.lut_meta:
             raise ValueError("Please load the lut_meta for all the headers")
 
-        self.packers["H1"] = None
-        self.packers["H2"] = None
-        self.packers["H3"] = None
+        self.encoders["H1"] = None
+        self.encoders["H2"] = None
+        self.encoders["H3"] = None
 
         for header_code, header_data in self.lut_meta.items():
             if header_code in ["H1", "H2", "H3"]:
                 continue
             vendor_sign = header_data["sign"]
-            packer = vendor.get_JsonIrToBin_obj(vendor_sign)
-            self.packers[header_code] = packer
+            encoder = vendor.get_JsonIrToBin_obj(vendor_sign)
+            self.encoders[header_code] = encoder
 
     def write_file_header(self, fp: BufferedWriter) -> None:
         header = f"CCCP{self.ir['version']}\n"
@@ -66,8 +66,8 @@ class JsonIrToBin(IrContext):
         scheme = self.lut_meta[header_code]["scheme"]
         symbol_width = self.lut_meta[header_code]["symbol_width"]
 
-        packer = self.packers[header_code]
-        vendor_byte_list = packer.get_bytes_of_segment(segment, scheme, symbol_width)
+        encoder = self.encoders[header_code]
+        vendor_byte_list = encoder.get_bytes_of_segment(segment, scheme, symbol_width)
         return b"".join([header_byte] + vendor_byte_list)
 
     def write_segments(self, fp: BufferedWriter) -> None:
@@ -85,7 +85,7 @@ class JsonIrToBin(IrContext):
     def encode_and_write(self, bin_filepath: str) -> None:
         self.set_lut_meta_for_default_headers()
         self.load_lut_meta()
-        self.load_packers()
+        self.load_encoders()
 
         with open(bin_filepath, 'ab') as fp:
             fp.truncate(0)

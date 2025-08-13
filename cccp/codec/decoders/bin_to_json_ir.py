@@ -17,22 +17,22 @@ class BinToJsonIr(IrContext):
     def __init__(self, bin_filepath: str) -> None:
         super().__init__()
         self.bin_filepath: str = bin_filepath
-        self.unpackers: Dict[str, Optional[BaseBinToJsonIr]] = {}
+        self.decoders: Dict[str, Optional[BaseBinToJsonIr]] = {}
 
-    def load_unpackers(self) -> None:
+    def load_decoders(self) -> None:
         if not self.lut_meta:
             raise ValueError("Please load the lut_meta for all the headers")
 
-        self.unpackers["H1"] = None
-        self.unpackers["H2"] = None
-        self.unpackers["H3"] = None
+        self.decoders["H1"] = None
+        self.decoders["H2"] = None
+        self.decoders["H3"] = None
 
         for header_code, header_data in self.lut_meta.items():
             if header_code in ["H1", "H2", "H3"]:
                 continue
             vendor_sign = header_data["sign"]
-            unpacker = vendor.get_BinToJsonIr_obj(vendor_sign)
-            self.unpackers[header_code] = unpacker
+            decoder = vendor.get_BinToJsonIr_obj(vendor_sign)
+            self.decoders[header_code] = decoder
 
     def decode_file_header(self, fp: BufferedReader) -> None:
         stream_bytes = fp.read(10)
@@ -89,8 +89,8 @@ class BinToJsonIr(IrContext):
         symbol_width = self.lut_meta[header_code]["symbol_width"]
         scheme = cast(str, self.lut_meta[header_code]["scheme"])
         sign = self.lut_meta[header_code]["sign"]
-        unpacker = cast(BaseBinToJsonIr, self.unpackers[header_code])
-        payload_bitlen, payload_str = unpacker.decode_segment(fp, symbol_width, scheme)
+        decoder = cast(BaseBinToJsonIr, self.decoders[header_code])
+        payload_bitlen, payload_str = decoder.decode_segment(fp, symbol_width, scheme)
 
         return [header_code, payload_bitlen, payload_str]
 
@@ -125,7 +125,7 @@ class BinToJsonIr(IrContext):
             self.decode_file_header(fp)
             self.decode_segment_headers(fp)
             self.load_lut_meta()
-            self.load_unpackers()
+            self.load_decoders()
             self.decode_segments(fp)
 
         with open(ir_filepath, 'w') as fp:
