@@ -1,7 +1,7 @@
 import json
 import pprint
 from io import BufferedWriter
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Union, cast
 from cccp.codec.types import JsonIrSegment
 from cccp.codec.context import IrContext
 from cccp.codec.contracts import BaseJsonIrToBin
@@ -44,9 +44,9 @@ class JsonIrToBin(IrContext):
         fp.write('$'.encode('ascii'))
 
     def get_bytes_of_exclude_segment(self, segment: JsonIrSegment) -> bytes:
-        header_code = segment[0]
-        payload_bitlen = segment[1]
-        payload = segment[2]
+        header_code = cast(str, segment[0])
+        payload_bitlen = cast(int, segment[1])
+        payload = cast(str, segment[2])
 
         header_byte = self.lut_meta[header_code]["byte"].to_bytes(1, byteorder='big')
         payload_bytes = payload.encode('ascii')
@@ -56,12 +56,12 @@ class JsonIrToBin(IrContext):
         return segment_bytes
 
     def get_bytes_of_newline_segment(self, segment: JsonIrSegment) -> bytes:
-        header_code = segment[0]
+        header_code = cast(str, segment[0])
         header_byte = self.lut_meta[header_code]["byte"].to_bytes(1, byteorder='big')
         return header_byte
 
     def get_bytes_of_vendor_segment(self, segment: JsonIrSegment) -> bytes:
-        header_code = segment[0]
+        header_code = cast(str, segment[0])
         header_byte = self.lut_meta[header_code]["byte"].to_bytes(1, byteorder='big')
         scheme = self.lut_meta[header_code]["scheme"]
         symbol_width = self.lut_meta[header_code]["symbol_width"]

@@ -1,9 +1,6 @@
 from typing import List, Tuple, Union, Optional, NamedTuple, TypedDict
 
-class JsonIrSegment(NamedTuple):
-    header_code: str
-    payload_bitlen: int
-    payload: str
+JsonIrSegment = List[Union[str, int]]
 
 class JsonIr(TypedDict):
     version: str
@@ -19,6 +16,7 @@ class VendorLutMetaDict(TypedDict):
     name: str
     symbol_width: int
     scheme: Optional[str]
+    sign: str
 
 class PartiallyProcessedPayloadTuple(NamedTuple):
     processed_bitlen: int

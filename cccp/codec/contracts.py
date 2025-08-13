@@ -1,16 +1,16 @@
 from io import BufferedReader
 from abc import ABC, abstractmethod
 from typing import Optional, Dict, List, Tuple
-from .types import PartiallyProcessedPayloadTuple, PayloadBitlenAndPayload, JsonIrSegment
+from .types import PartiallyProcessedPayloadTuple, PayloadBitlenAndPayload, JsonIrSegment, VendorLutDict, VendorLutMetaDict
 
 class BaseAsciiToJsonIr(ABC):
 
     @abstractmethod
-    def process_char(self, char: str, lut: Dict) -> Optional[PartiallyProcessedPayloadTuple]:
+    def process_char(self, char: str, lut: VendorLutDict) -> Optional[PartiallyProcessedPayloadTuple]:
         pass
 
     @abstractmethod
-    def conclude_segment(self, payload_bitlen: int, payload: str, lut_meta: Dict) -> PayloadBitlenAndPayload:
+    def conclude_segment(self, payload_bitlen: int, payload: str, lut_meta: VendorLutMetaDict) -> PayloadBitlenAndPayload:
         pass
 
 class BaseJsonIrToBin(ABC):
@@ -22,11 +22,11 @@ class BaseJsonIrToBin(ABC):
 class BaseBinToJsonIr(ABC):
 
     @abstractmethod
-    def decode_segment(self, fp: BufferedReader, symbol_width: int, scheme: str) -> Tuple[str, int]:
+    def decode_segment(self, fp: BufferedReader, symbol_width: int, scheme: Optional[str]) -> Tuple[str, int]:
         pass
 
 class BaseJsonIrToAscii(ABC):
 
     @abstractmethod
-    def decode_segment(self, payload_bitlen: int, payload: str, lut_meta: Dict, lut: Dict):
+    def decode_segment(self, payload_bitlen: int, payload: str, lut_meta: VendorLutMetaDict, lut: VendorLutDict):
         pass

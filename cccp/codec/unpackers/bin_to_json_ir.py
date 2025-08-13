@@ -2,7 +2,7 @@ import os
 import json
 import re
 import pprint
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional, cast
 from pathlib import Path
 from io import BufferedReader
 from cccp.codec.types import JsonIrSegment
@@ -17,7 +17,7 @@ class BinToJsonIr(IrContext):
     def __init__(self, bin_filepath: str) -> None:
         super().__init__()
         self.bin_filepath: str = bin_filepath
-        self.unpackers: Dict[str, BaseBinToJsonIr] = {}
+        self.unpackers: Dict[str, Optional[BaseBinToJsonIr]] = {}
 
     def load_unpackers(self) -> None:
         if not self.lut_meta:
@@ -87,9 +87,9 @@ class BinToJsonIr(IrContext):
     def decode_vendor_segment(self, header_code: str, fp: BufferedReader) -> JsonIrSegment:
 
         symbol_width = self.lut_meta[header_code]["symbol_width"]
-        scheme = self.lut_meta[header_code]["scheme"]
+        scheme = cast(str, self.lut_meta[header_code]["scheme"])
         sign = self.lut_meta[header_code]["sign"]
-        unpacker = self.unpackers[header_code]
+        unpacker = cast(BaseBinToJsonIr, self.unpackers[header_code])
         payload_bitlen, payload_str = unpacker.decode_segment(fp, symbol_width, scheme)
 
         return [header_code, payload_bitlen, payload_str]

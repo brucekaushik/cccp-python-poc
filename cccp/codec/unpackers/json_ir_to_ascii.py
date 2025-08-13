@@ -1,5 +1,4 @@
-from io import BufferedWriter
-from typing import Dict
+from typing import Dict, Optional, TextIO, cast
 from cccp.codec import vendor
 from cccp.codec.contracts import BaseJsonIrToAscii
 from cccp.codec.context import IrContext
@@ -14,7 +13,7 @@ class JsonIrToAscii(IrContext):
 
     def __init__(self) -> None:
         super().__init__()
-        self.unpackers: Dict[str, BaseJsonIrToAscii] = {}
+        self.unpackers: Dict[str, Optional[BaseJsonIrToAscii]] = {}
 
     def load_unpackers(self) -> None:
         if not self.lut_meta:
@@ -31,7 +30,7 @@ class JsonIrToAscii(IrContext):
             unpacker = vendor.get_JsonIrToAscii_obj(vendor_sign)
             self.unpackers[header_code] = unpacker
 
-    def write_segments(self, fp: BufferedWriter):
+    def write_segments(self, fp: TextIO):
         for segment in self.ir["segments"]:
 
             if segment[0] == "H1":
@@ -45,25 +44,25 @@ class JsonIrToAscii(IrContext):
                 fp.write(ascii_text)
 
     def get_text_of_exclude_segment(self, segment: JsonIrSegment) -> str:
-        header_code = segment[0]
-        payload_bitlen = segment[1]
-        payload = segment[2]
+        header_code = cast(str, segment[0])
+        payload_bitlen = cast(int, segment[1])
+        payload = cast(str, segment[2])
 
         return payload
 
     def get_text_of_newline_segment(self, segment: JsonIrSegment) -> str:
-        header_code = segment[0]
-        payload_bitlen = segment[1]
-        payload = segment[2]
+        header_code = cast(str, segment[0])
+        payload_bitlen = cast(int, segment[1])
+        payload = cast(str, segment[2])
 
         return payload
 
     def get_text_of_vendor_segment(self, segment: JsonIrSegment) -> str:
-        header_code = segment[0]
-        payload_bitlen = segment[1]
-        payload = segment[2]
+        header_code = cast(str, segment[0])
+        payload_bitlen = cast(int, segment[1])
+        payload = cast(str, segment[2])
 
-        vendor_unpacker = self.unpackers[header_code]
+        vendor_unpacker = cast(BaseJsonIrToAscii, self.unpackers[header_code])
         vendor_lut_meta = self.lut_meta[header_code]
         vendor_lut = self.luts[header_code]
 

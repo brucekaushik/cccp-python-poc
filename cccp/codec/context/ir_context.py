@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Union, TypedDict, Optional
-from cccp.codec.types import JsonIr, VendorLutMetaDict
+from cccp.codec.types import JsonIr, VendorLutMetaDict, VendorLutDict
 from cccp.codec import vendor
 
 
@@ -9,14 +9,14 @@ class IrContext():
 
     def __init__(self) -> None:
         self.ir: JsonIr = self.init_ir()
-        self.luts: Dict[str, Dict[str, str]] = {}
+        self.luts: Dict[str, VendorLutDict] = {}
         self.lut_meta: Dict[str, VendorLutMetaDict] = {}
         self.default_header_count: int = 3
         self.last_header_num: int = 3
         self.last_header_code: str = "H3"
 
     def init_ir(self) -> JsonIr:
-        ir = {
+        ir: JsonIr = {
             "version": "0.0.1",
             "headers": [
                 ["H1", "Exclude"],
@@ -70,7 +70,7 @@ class IrContext():
         }
 
     # TODO: this is not applicable when unpacking, maybe move this elsewhere
-    def add_header(self, header_name: str) -> str:
+    def add_header(self, header_name: str) -> None:
         self.last_header_num += 1
         self.last_header_code = f"H{self.last_header_num}"
         vendor.validate_sign(header_name)

@@ -1,5 +1,6 @@
 from io import StringIO
-from typing import Dict, List, Optional, Union, TextIO
+from typing import Dict, List, Optional, Union, TextIO, cast
+from cccp.codec.types import VendorLutDict, JsonIrSegment
 from cccp.codec.context import IrContext
 from cccp.codec.contracts import BaseAsciiToJsonIr
 from cccp.codec import vendor
@@ -16,19 +17,18 @@ class AsciiToJsonIr(IrContext):
         self.unprocessed_chars: List[str] = []
         self.processed_payloads: List[str] = []
         self.processed_payload_bitlens: List[int] = []
-        self.processed_segments: List[Union[str, int]] = []
+        self.processed_segments: List[JsonIrSegment] = []
 
         self.vendor_header_code: Optional[str] = None
         self.vendor_sign: Optional[str] = None
         self.vendor_packer: Optional[BaseAsciiToJsonIr] = None
-        self.vendor_lut: Optional[Dict[str, str]]
+        self.vendor_lut: Optional[VendorLutDict]
 
     def load_vendor_data(self) -> None:
         self.vendor_header_code = f"H{self.last_header_num}"
         self.vendor_lut = self.luts[self.vendor_header_code]
         self.vendor_sign = self.lut_meta[self.vendor_header_code]["sign"]
         self.vendor_packer = vendor.get_AsciiToJsonIr_obj(self.vendor_sign)
-
 
     def encode(self) -> None:
         self.set_lut_meta_for_default_headers()
@@ -64,7 +64,8 @@ class AsciiToJsonIr(IrContext):
             self.processed_payload_bitlens = []
             self.processed_segments = []
 
-            stream = StringIO(segment[2])
+            segment_payload = cast(str, segment[2])
+            stream = StringIO(segment_payload)
             self.encode_stream(stream)
 
             for s in self.processed_segments:
@@ -73,6 +74,9 @@ class AsciiToJsonIr(IrContext):
         self.ir["segments"] = segments
 
     def encode_stream(self, stream: TextIO) -> None:
+        assert self.vendor_packer is not None
+        assert self.vendor_lut is not None
+
         while True:
             char = stream.read(1)
 
@@ -154,18 +158,21 @@ class AsciiToJsonIr(IrContext):
         payload_exclude_bitlen = len(self.unprocessed_chars) * 8
         payload_exclude = ''.join(self.unprocessed_chars)
 
-        segment = ["H1", payload_exclude_bitlen, payload_exclude]
+        segment: JsonIrSegment = ["H1", payload_exclude_bitlen, payload_exclude]
         self.processed_segments.append(segment)
 
     def conclude_newline_segment(self) -> None:
-        segment = ["H2", 8, "\n"]
+        segment: JsonIrSegment = ["H2", 8, "\n"]
         self.processed_segments.append(segment)
 
     def conclude_vendor_segment(self) -> None:
+        assert self.vendor_header_code is not None
+        assert self.vendor_packer is not None
+
         lut_meta =  self.lut_meta[self.vendor_header_code]
         payload = ''.join(self.processed_payloads)
         payload_bitlen = sum(self.processed_payload_bitlens)
 
         payload_bitlen, payload = self.vendor_packer.conclude_segment(payload_bitlen, payload, lut_meta)
-        segment = [self.vendor_header_code, payload_bitlen, payload]
+        segment: JsonIrSegment = [self.vendor_header_code, payload_bitlen, payload]
         self.processed_segments.append(segment)
