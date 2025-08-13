@@ -1,6 +1,6 @@
 import hashlib
-from cccp.codec.packers import AsciiToJsonIr, JsonIrToBin
-from cccp.codec.unpackers import BinToJsonIr, JsonIrToAscii
+from cccp.codec.encoders import AsciiToJsonIr, JsonIrToBin
+from cccp.codec.decoders import BinToJsonIr, JsonIrToAscii
 
 def md5(fname):
     hash_md5 = hashlib.md5()

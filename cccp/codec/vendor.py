@@ -26,7 +26,7 @@ def get_vendor_package_path(sign: str) -> Path:
     return package_path
 
 def get_AsciiToJsonIr_obj(sign:str) -> BaseAsciiToJsonIr:
-    module_path = get_vendor_module_path(sign) + '.packers'
+    module_path = get_vendor_module_path(sign) + '.encoders'
     module = None
 
     try:
@@ -43,7 +43,7 @@ def get_AsciiToJsonIr_obj(sign:str) -> BaseAsciiToJsonIr:
     return module.AsciiToJsonIr()
 
 def get_JsonIrToBin_obj(sign: str) -> BaseJsonIrToBin:
-    module_path = get_vendor_module_path(sign) + '.packers'
+    module_path = get_vendor_module_path(sign) + '.encoders'
     module = None
 
     try:
@@ -60,7 +60,7 @@ def get_JsonIrToBin_obj(sign: str) -> BaseJsonIrToBin:
     return module.JsonIrToBin()
 
 def get_BinToJsonIr_obj(sign: str) -> BaseBinToJsonIr:
-    module_path = get_vendor_module_path(sign) + '.unpackers'
+    module_path = get_vendor_module_path(sign) + '.decoders'
     module = None
 
     try:
@@ -77,7 +77,7 @@ def get_BinToJsonIr_obj(sign: str) -> BaseBinToJsonIr:
     return module.BinToJsonIr()
 
 def get_JsonIrToAscii_obj(sign: str) -> BaseJsonIrToAscii:
-    module_path = get_vendor_module_path(sign) + '.unpackers'
+    module_path = get_vendor_module_path(sign) + '.decoders'
     module = None
 
     try:
